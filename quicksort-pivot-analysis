@@ -1,0 +1,138 @@
+import random
+
+# =========================
+# Base Class
+# =========================
+class QuickSortBase:
+    def __init__(self):
+        self.swaps = 0
+
+    def swap(self, arr, i, j):
+        temp = arr[i]
+        arr[i] = arr[j]
+        arr[j] = temp
+        self.swaps += 1
+
+    # quick sort بدون recursion
+    def quick_sort(self, arr):
+        stack = [(0, len(arr) - 1)]
+
+        while stack:
+            low, high = stack.pop()
+
+            if low < high:
+                p = self.partition(arr, low, high)
+
+                stack.append((low, p - 1))
+                stack.append((p + 1, high))
+
+    def run_test(self, data):
+        self.swaps = 0
+        arr = data.copy()
+        self.quick_sort(arr)
+        return self.swaps
+
+
+# =========================
+# First Pivot Class
+# =========================
+class FirstPivot(QuickSortBase):
+    def partition(self, arr, low, high):
+        pivot = arr[low]
+        i = low + 1
+        j = high
+
+        while True:
+            while i <= j and arr[i] <= pivot:
+                i += 1
+
+            while i <= j and arr[j] > pivot:
+                j -= 1
+
+            if i < j:
+                self.swap(arr, i, j)
+            else:
+                break
+
+        self.swap(arr, low, j)
+        return j
+
+
+# =========================
+# Last Pivot Class
+# =========================
+class LastPivot(QuickSortBase):
+    def partition(self, arr, low, high):
+        pivot = arr[high]
+        i = low - 1
+
+        for j in range(low, high):
+            if arr[j] <= pivot:
+                i += 1
+                self.swap(arr, i, j)
+
+        self.swap(arr, i + 1, high)
+        return i + 1
+
+
+# =========================
+# Random Pivot Class
+# =========================
+class RandomPivot(QuickSortBase):
+    def partition(self, arr, low, high):
+        pivot_index = random.randint(low, high)
+        self.swap(arr, pivot_index, high)
+        return self.partition_last(arr, low, high)
+
+    def partition_last(self, arr, low, high):
+        pivot = arr[high]
+        i = low - 1
+
+        for j in range(low, high):
+            if arr[j] <= pivot:
+                i += 1
+                self.swap(arr, i, j)
+
+        self.swap(arr, i + 1, high)
+        return i + 1
+
+
+# =========================
+# Data
+# =========================
+def generate_data(n, case):
+    if case == "increasing":
+        return list(range(1, n + 1))
+    elif case == "decreasing":
+        return list(range(n, 0, -1))
+    else:
+        arr = list(range(1, n + 1))
+        random.shuffle(arr)
+        return arr
+
+
+# =========================
+# Main
+# =========================
+sizes = [10000, 100000, 1000000]
+cases = ["increasing", "decreasing", "random"]
+
+methods = [
+    ("First Pivot", FirstPivot()),
+    ("Last Pivot", LastPivot()),
+    ("Random Pivot", RandomPivot())
+]
+
+for n in sizes:
+    print("\n========================")
+    print("Size =", n)
+
+    for case in cases:
+        print("\nCase:", case)
+
+        base_data = generate_data(n, case)
+
+        for name, obj in methods:
+            print(name + ":")
+            s = obj.run_test(base_data)
+            print("Swaps =", s)
